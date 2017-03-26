@@ -9,29 +9,21 @@ var gulp         = require('gulp'),
     imageMin     = require('gulp-imagemin'),
     pngquant     = require('imagemin-pngquant'),
     cache        = require('gulp-cache'),
-    autoprefixer = require('gulp-autoprefixer');
+    autoprefixer = require('gulp-autoprefixer'),
+    gcmq         = require('gulp-group-css-media-queries');
 
-//SASS+AUTOPREFIX
+//1) Build main.min.css
 gulp.task('sass', function(){
   return gulp.src('app/sass/**/*.scss')
   .pipe(sass())
   .pipe(autoprefixer(['last 15 versions','> 1%', 'ie 8', 'ie 7'], {cascade: true}))
+  .pipe(gcmq())
+  .pipe(cssnano())
   .pipe(gulp.dest('app/css'))
   .pipe(browserSync.reload({stream: true}))
 });
 
-//SCRIPTS+MINIFICATION
-gulp.task('scripts',function(){
-  return gulp.src([
-    'app/libs/jquery/dist/jquery.min.js',
-    'app/libs/magnific-popup/dist/jquery.magnific-popup.minjs'
-
-  ])
-  .pipe(concat('libs.min.js'))
-  .pipe(uglify())
-  .pipe(gulp.dest('app/js'));
-});
-
+//Build libs.min.cs
 gulp.task('css-libs',['sass'], function(){
   return gulp.src('app/css/libs.css')
   .pipe(cssnano())
@@ -39,25 +31,27 @@ gulp.task('css-libs',['sass'], function(){
   .pipe(gulp.dest('app/css'));
 });
 
-//BOWER
-gulp.task('browser-sync', function(){
-  browserSync({
-    server: {
-      baseDir: 'app'
-    },
-    notify: false
-  });
+//3) Build libs.min.js
+gulp.task('scripts',function(){
+  return gulp.src([
+  //bower
+  ])
+  .pipe(concat('libs.min.js'))
+  .pipe(uglify())
+  .pipe(gulp.dest('app/js'));
 });
 
-
+//Clean dist
 gulp.task('clean', function(){
   return del.sync('dist');
 });
 
+//Clean cache
 gulp.task('cache-clean',function () {
   return cache.clearAll();
 });
 
+//Optimize images
 gulp.task('img',function(){
   return gulp.src('app/img/**/*')
   .pipe(cache(imageMin({
@@ -69,15 +63,22 @@ gulp.task('img',function(){
   .pipe(gulp.dest('dist/img'));
 });
 
-//WATCH
-gulp.task('watch',['browser-sync', 'css-libs', 'scripts'], function() {//2param ['brow..'] вызов таска перед функцией
+gulp.task('browser-sync', function(){
+  browserSync({
+    server: {
+      baseDir: 'app'
+    },
+    notify: false
+  });
+});
+
+gulp.task('watch',['browser-sync', 'css-libs','scripts'], function() {
   gulp.watch('app/sass/**/*.scss', ['sass']);
   gulp.watch('app/*.html', browserSync.reload);
   gulp.watch('app/js/**/*.js', browserSync.reload);
 });
 
-//BUILD
-gulp.task('build',['clean','img','sass','scripts'],function(){
+gulp.task('build',['clean','img','css-libs','scripts'],function(){
 
   var buildCss = gulp.src([
     'app/css/libs.min.css',
@@ -96,11 +97,9 @@ gulp.task('build',['clean','img','sass','scripts'],function(){
 });
 
 
-//npm i с джисона все установит
 
-//если перенисти папку которая кешируется появятся траблы надо кеш клин
+
 //tips
+//если перенисти папку которая кешируется появятся траблы надо кеш клин
 //**/*.sass -- все директории и поддиректории
-//! в -- начале все коме этого
-//.+(sass|scss) -- сас и сцсс
-//файлы начинающийся с _ не компилятся
+// (!) в -- начале все коме этого
