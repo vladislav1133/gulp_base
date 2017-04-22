@@ -14,7 +14,7 @@ var gulp         = require('gulp'),
 
 //1) Build main.min.css
 gulp.task('sass', function(){
-  return gulp.src('app/sass/**/*.scss')
+  return gulp.src('app/sass/**/*.sass')
   .pipe(sass())
   .pipe(autoprefixer(['last 15 versions','> 1%', 'ie 8', 'ie 7'], {cascade: true}))
   .pipe(gcmq())
@@ -81,8 +81,9 @@ gulp.task('watch',['browser-sync', 'css-libs','scripts'], function() {
 gulp.task('build',['clean','img','css-libs','scripts'],function(){
 
   var buildCss = gulp.src([
-    'app/css/libs.min.css',
-    'app/css/main.css'
+    'app/css/libs.min.css', 
+    'app/css/main.min.css',
+    'app/css/fonts.min.css'
   ])
   .pipe(gulp.dest('dist/css'));
 
